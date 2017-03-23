@@ -422,8 +422,11 @@ static void SD_LowLevel_Init(void)
   GPIO_InitTypeDef  GPIO_InitStructure;
 
   /* GPIOC and GPIOD Periph clock enable */
+#if DETECT_SD == 1
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | SD_DETECT_GPIO_CLK, ENABLE);
-
+#else
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD, ENABLE);
+#endif
   GPIO_PinAFConfig(GPIOC, GPIO_PinSource8, GPIO_AF_SDIO);
   GPIO_PinAFConfig(GPIOC, GPIO_PinSource9, GPIO_AF_SDIO);
   GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_SDIO);
@@ -448,11 +451,13 @@ static void SD_LowLevel_Init(void)
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOC, &GPIO_InitStructure);
 
+#if DETECT_SD == 1
   /*!< Configure SD_SPI_DETECT_PIN pin: SD Card detect pin */
   GPIO_InitStructure.GPIO_Pin = SD_DETECT_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStructure);
+#endif
 
   /* Enable the SDIO APB2 Clock */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SDIO, ENABLE);
@@ -615,13 +620,10 @@ SD_Error SD_Init(void)
     errorstatus = SD_SelectDeselect((uint32_t) (SDCardInfo.RCA << 16));
   }
 
-// TODO: SD não Funciona em 4bits
-#if 0
   if (errorstatus == SD_OK)
   {
     errorstatus = SD_EnableWideBusOperation(SDIO_BusWide_4b);
   }
-#endif
 
   return(errorstatus);
 }
@@ -662,9 +664,10 @@ SDTransferState SD_GetStatus(void)
 SDCardState SD_GetState(void)
 {
   uint32_t resp1 = 0;
-  
+#if DETECT_SD == 1
   if(SD_Detect()== SD_PRESENT)
   {
+#endif
     if (SD_SendStatus(&resp1) != SD_OK)
     {
       return SD_CARD_ERROR;
@@ -673,11 +676,13 @@ SDCardState SD_GetState(void)
     {
       return (SDCardState)((resp1 >> 9) & 0x0F);
     }
+#if DETECT_SD == 1
   }
   else
   {
     return SD_CARD_ERROR;
   }
+#endif
 }
 
 /**
@@ -685,6 +690,8 @@ SDCardState SD_GetState(void)
  * @param  None
  * @retval Return if SD is detected or not
  */
+
+#if DETECT_SD == 1
 uint8_t SD_Detect(void)
 {
   __IO uint8_t status = SD_PRESENT;
@@ -696,6 +703,7 @@ uint8_t SD_Detect(void)
   }
   return status;
 }
+#endif
 
 /**
   * @brief  Enquires cards about their operating voltage and configures 

@@ -15,9 +15,11 @@
 
 DSTATUS disk_status(BYTE pdrv /* Physical drive nmuber to identify the drive */
 ) {
+#if DETECT_SD == 1
 	if (SD_Detect() != SD_PRESENT) {
 		return STA_NOINIT;
 	}
+#endif
 	if (pdrv > 0)
 		return STA_NOINIT;
 	else
@@ -66,28 +68,11 @@ UINT count /* Number of sectors to read */
 		return RES_ERROR;
 	}
 
+#if DETECT_SD == 1
 	if (SD_Detect() != SD_PRESENT) {
 		return RES_NOTRDY;
 	}
-
-	/*if ((DWORD) buff & 3) {
-	 DRESULT res = RES_OK;
-	 DWORD scratch[BLOCK_SIZE / 4];
-
-	 while (count--) {
-	 res = disk_read(pdrv, (void *) scratch, sector++, 1);
-
-	 if (res != RES_OK) {
-	 break;
-	 }
-
-	 memcpy(buff, scratch, BLOCK_SIZE);
-
-	 buff += BLOCK_SIZE;
-	 }
-
-	 return res;
-	 }*/
+#endif
 	Status = SD_ReadMultiBlocks(buff, sector << 9, BLOCK_SIZE, count);
 
 	if (Status == SD_OK) {
@@ -123,9 +108,11 @@ UINT count /* Number of sectors to write */
 		return RES_ERROR;
 	}
 
+#if DETECT_SD == 1
 	if (SD_Detect() != SD_PRESENT) {
 		return RES_NOTRDY;
 	}
+#endif
 
 	/*if ((DWORD) buff & 3) {
 		DRESULT res = RES_OK;

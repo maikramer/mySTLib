@@ -384,6 +384,8 @@ typedef struct
  #define SD_SDIO_DMA_IRQn              DMA2_Stream6_IRQn
  #define SD_SDIO_DMA_IRQHANDLER        DMA2_Stream6_IRQHandler
 #endif /* SD_SDIO_DMA_STREAM3 */
+//Usa a detecção de SD
+#define DETECT_SD			0
 /**
   * @}
   */ 
